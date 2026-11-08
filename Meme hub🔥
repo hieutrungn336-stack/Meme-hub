@@ -1,0 +1,154 @@
+-- ========================================================
+-- MEME HUB 🔥 - KILL ALL TỐI ƯU CHUYÊN SÂU CHO GAME
+-- ========================================================
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+
+local playerGui = LocalPlayer:WaitForChild("PlayerGui", 10)
+if not playerGui then return end
+
+-- Xóa GUI cũ
+pcall(function()
+    if playerGui:FindFirstChild("MemeHubMenu") then playerGui.MemeHubMenu:Destroy() end
+    if CoreGui:FindFirstChild("MemeHubMenu") then CoreGui.MemeHubMenu:Destroy() end
+end)
+
+-- Tạo Menu GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MemeHubMenu"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.DisplayOrder = 2147483647
+
+pcall(function() ScreenGui.Parent = CoreGui end)
+if not ScreenGui.Parent then ScreenGui.Parent = playerGui end
+
+-- Nút mở menu (Góc trái)
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 55, 0, 55)
+ToggleBtn.Position = UDim2.new(0.03, 0, 0.12, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 215, 0)
+ToggleBtn.TextSize = 11
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.Text = "MEME\nHUB"
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true
+ToggleBtn.Parent = ScreenGui
+
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(1, 0)
+local tStroke = Instance.new("UIStroke", ToggleBtn)
+tStroke.Color = Color3.fromRGB(255, 215, 0)
+tStroke.Thickness = 2
+
+-- Khung Menu
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 200, 0, 120)
+MainFrame.Position = UDim2.new(0.12, 0, 0.12, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+local mStroke = Instance.new("UIStroke", MainFrame)
+mStroke.Color = Color3.fromRGB(138, 43, 226)
+mStroke.Thickness = 2
+
+local visible = true
+ToggleBtn.Activated:Connect(function()
+    visible = not visible
+    MainFrame.Visible = visible
+end)
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 12
+Title.Font = Enum.Font.GothamBold
+Title.Text = "🔥 MEME HUB: KILL ALL 🔥"
+Title.Parent = MainFrame
+Instance.new("UICorner", Title).CornerRadius = UDim.new(0, 8)
+
+-- Nút Kill All chính
+local KillBtn = Instance.new("TextButton")
+KillBtn.Size = UDim2.new(0.9, 0, 0, 45)
+KillBtn.Position = UDim2.new(0.05, 0, 0.45, 0)
+KillBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
+KillBtn.TextColor3 = Color3.fromRGB(255, 69, 0)
+KillBtn.TextSize = 13
+KillBtn.Font = Enum.Font.GothamBold
+KillBtn.Text = "⚡ KÍCH HOẠT KILL ALL"
+KillBtn.Parent = MainFrame
+
+Instance.new("UICorner", KillBtn).CornerRadius = UDim.new(0, 6)
+local kStroke = Instance.new("UIStroke", KillBtn)
+kStroke.Color = Color3.fromRGB(255, 69, 0)
+kStroke.Thickness = 1.5
+
+-- Hàm thực thi Kill All trực tiếp dựa vào cơ chế nhân vật
+local isKilling = false
+KillBtn.Activated:Connect(function()
+    isKilling = not isKilling
+    if isKilling then
+        kStroke.Color = Color3.fromRGB(0, 255, 0)
+        KillBtn.TextColor3 = Color3.fromRGB(0, 255, 0)
+        KillBtn.Text = "🟢 ĐANG CHẠY KILL ALL"
+        
+        task.spawn(function()
+            while isKilling do
+                local char = LocalPlayer.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                
+                if hrp then
+                    -- Lấy tool trên tay hoặc balo
+                    local tool = char:FindFirstChildOfClass("Tool") or LocalPlayer.Backpack:FindFirstChildOfClass("Tool")
+                    if tool and tool.Parent == LocalPlayer.Backpack then
+                        tool.Parent = char
+                    end
+                    
+                    -- Tự động dịch chuyển đến ngay sau lưng từng người chơi rồi chém lập tức để server nhận diện sát thương
+                    for _, player in ipairs(Players:GetPlayers()) do
+                        if player ~= LocalPlayer and isKilling then
+                            local eChar = player.Character
+                            local eHrp = eChar and eChar:FindFirstChild("HumanoidRootPart")
+                            local eHum = eChar and eChar:FindFirstChildOfClass("Humanoid")
+                            
+                            if eHrp and eHum and eHum.Health > 0 then
+                                local oldPos = hrp.CFrame
+                                -- Teleport áp sát mục tiêu trong khoảnh khắc cực ngắn
+                                hrp.CFrame = eHrp.CFrame * CFrame.new(0, 0, 2)
+                                if tool then
+                                    pcall(function()
+                                        tool:Activate()
+                                        -- Kích hoạt thêm các hàm Remote nếu game hỗ trợ
+                                        for _, v in ipairs(tool:GetDescendants()) do
+                                            if v:IsA("RemoteEvent") then
+                                                v:FireServer(eChar)
+                                            end
+                                        end
+                                    end)
+                                end
+                                task.wait(0.05)
+                                hrp.CFrame = oldPos
+                            end
+                        end
+                    end
+                end
+                task.wait(0.2)
+            end
+            
+            kStroke.Color = Color3.fromRGB(255, 69, 0)
+            KillBtn.TextColor3 = Color3.fromRGB(255, 69, 0)
+            KillBtn.Text = "⚡ KÍCH HOẠT KILL ALL"
+        end)
+    else
+        isKilling = false
+    end
+end)
+
+print("Meme Hub Kill All đã sẵn sàng!")
+      
